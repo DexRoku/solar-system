@@ -6,11 +6,24 @@ on:
     branches:
       - main
       - 'feature/*'
+
+env:
+  MONGO_URI: ${{ vars.MONGO_URI }}
+  MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
     
 jobs:
     unit-testing:
         name: Unit Testing
-        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            node-version: [18, 19, 20]
+            operating-system: [ubuntu-latest, windows-latest]
+            exclude:
+              - node-version: 20
+                operating-system: windows-latest
+
+        runs-on: ${{ matrix.operating-system }}
         steps:
         - name: Checkout Repository
           uses: actions/checkout@v4
@@ -18,16 +31,16 @@ jobs:
         - name: Setup NodeJS Version
           uses: actions/setup-node@v3
           with:
-            node-version: 20
-    
+            node-version: ${{ matrix.node-version }}
+
         - name: Install Dependencies
           run: npm install
     
         - name: Unit Testing
           run: npm test
           
-        # - name: Archive Test Result
-        #   uses: actions/upload-artifact@v3
-        #   with:
-        #     name: Mocha-Test-Result
-        #     path: test-results.xml
+        - name: Archive Test Result
+          uses: actions/upload-artifact@v4
+          with:
+            name: Mocha-Test-Result-${{ matrix.node-version }}-${{ matrix.operating-system }}
+            path: test-results.xml
