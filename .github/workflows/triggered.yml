@@ -1,0 +1,12 @@
+# .github/workflows/triggered.yml
+name: Triggered by Dispatch
+on:
+  repository_dispatch:
+    types: [run-tests]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Running something in forked repo"
+        
